@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Добавить объявление</h1>
+<form method="POST" style="max-width: 520px; margin: 0 auto; background: linear-gradient(135deg, #23263a 60%, #181a20 100%); border-radius: 18px; box-shadow: 0 8px 32px rgba(59,130,246,0.18); padding: 32px 36px; color: #f3f4f6;">
+    <div class="mb-4">
+        <label for="type" class="form-label" style="font-weight:700;">Тип объявления</label>
+        <select name="type" id="type" class="form-select">
+            <option value="lost">Потеряно</option>
+            <option value="found">Найдено</option>
+        </select>
+    </div>
+    <div class="mb-4">
+        <label for="category" class="form-label" style="font-weight:700;">Категория</label>
+        <input type="text" name="category" id="category" class="form-control" placeholder="Например: Ключи, Электроника" required>
+    </div>
+    <div class="mb-4">
+        <label for="description" class="form-label" style="font-weight:700;">Описание</label>
+        <textarea name="description" id="description" class="form-control" placeholder="Кратко опишите предмет..." rows="3" required></textarea>
+    </div>
+    <div class="mb-4">
+        <label for="photo" class="form-label" style="font-weight:700;">Фото</label>
+        <input type="file" class="form-control" id="photo" name="photo" accept="image/*" disabled>
+        <small class="form-text text-muted">(Пока не работает, для визуализации)</small>
+    </div>
+    <div class="mb-4">
+        <label class="form-label" style="font-weight:700;">Местоположение</label>
+        <div class="d-flex flex-column gap-2">
+            <input type="text" class="form-control" id="location-manual" name="location" placeholder="Ввести координаты вручную (например, 55.7557, 37.71174)">
+            <button type="button" class="btn btn-secondary" style="width:100%;" disabled>Отправить моё местоположение</button>
+        </div>
+        <small class="form-text text-muted">(Поля не работают, только для визуализации)</small>
+    </div>
+    <button type="submit" class="btn btn-success w-100" onclick="simulateAnonymization()">Отправить (с анонимизацией)</button>
+</form>
+<script>
+function simulateAnonymization() {
+    alert('Anonymization applied (simulated: faces blurred)!');
+}
+</script>
+{% endblock %}

@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Поиск</h1>
+<form method="GET">
+    <input type="text" name="q" value="{{ query }}" class="form-control" placeholder="Поиск по описанию">
+    <button type="submit" class="btn btn-primary mt-2">Фильтровать</button>
+</form>
+<div class="row mt-3">
+    {% for item in announcements %}
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                    <h5 class="card-title"><span class="ann-type">{{ item.type.upper() }}</span>: <span class="ann-category">{{ item['Категория'] }}</span></h5>
+                    <p class="card-text ann-desc">{{ item['Описание'] }}</p>
+                    <a href="/details/{{ item.id }}" class="btn btn-primary">Посмотреть</a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

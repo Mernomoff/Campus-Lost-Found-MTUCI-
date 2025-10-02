@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block content %}
+<h1 class="center-title">Карта МТУСИ</h1>
+    <div id="map" style="width: 100%; max-width: 1400px; height: 750px; margin: 0 auto; border-radius: 20px; overflow: hidden;"></div>
+<script>
+var map = L.map('map').setView([55.75508, 37.71376], 17);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+
+var campusPolygon = [
+    [55.75537, 37.71102],
+    [55.75591, 37.71171],
+    [55.75591, 37.71356],
+    [55.7563, 37.71356],
+    [55.75629, 37.71476],
+    [55.75591, 37.71476],
+    [55.75592, 37.71584],
+    [55.75448, 37.71573],
+    [55.75457, 37.7146],
+    [55.75413, 37.71373],
+    [55.75381, 37.71206]
+];
+L.polygon(campusPolygon, {
+    color: '#6366f1',
+    weight: 5,
+    fillColor: '#6366f1',
+    fillOpacity: 0.1
+}).addTo(map).bindPopup('Кампус МТУСИ');
+
+var data = JSON.parse('{{ announcements|tojson | safe }}');
+data.forEach(function(item) {
+    var loc = item['Локация'] || item.location;
+    var desc = item['Описание'] || item.description || '';
+    if (loc && Array.isArray(loc) && loc.length === 2) {
+        L.marker(loc).addTo(map)
+            .bindPopup(desc);
+    }
+});
+</script>
+{% endblock %}

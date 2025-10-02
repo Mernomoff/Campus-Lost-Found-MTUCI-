@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Чат для объявления {{ item_id }}</h1>
+<form method="POST" id="chatForm">
+    <ul class="list-group">
+        {% for msg in messages %}
+        <li class="list-group-item">{{ msg.sender }}: {{ msg.text }}</li>
+        {% endfor %}
+    </ul>
+    <input type="text" name="message" id="message" class="form-control mt-2" placeholder="Сообщение">
+    <button type="submit" class="btn btn-primary mt-1">Отправить</button>
+</form>
+<script>
+document.getElementById('chatForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    var formData = new FormData(this);
+    fetch('/chat/{{ item_id }}', {method: 'POST', body: formData})
+        .then(response => response.text())
+        .then(() => location.reload());
+});
+</script>
+{% endblock %}

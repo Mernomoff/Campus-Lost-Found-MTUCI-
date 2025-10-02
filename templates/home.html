@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="home-bg-3d">
+    <img src="/static/3d-campus.png" alt="3D Campus" />
+</div>
+<h1 id="ann-title" style="text-align: center;">Последние объявления</h1>
+<div class="row">
+    {% for item in announcements %}
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title"><span class="ann-type">{{ item.type.upper() }}</span>: <span class="ann-category">{{ item['Категория'] }}</span></h5>
+                <p class="card-text ann-desc">{{ item['Описание'] }}</p>
+                <a href="/details/{{ item.id }}" class="btn btn-primary ann-details">Подробнее</a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

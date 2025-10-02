@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block content %}
+<h1 style="margin-bottom: 30px;">Детали объявления</h1>
+<div class="card" style="max-width: 500px; margin: 0 auto; box-shadow: 0 0 30px #2228; border-radius: 20px;">
+	<div class="card-body">
+		<h4 class="card-title" style="margin-bottom: 20px;">{{ item.type.upper() }}</h4>
+		<div class="mb-3"><strong>Категория:</strong> {{ item['Категория'] }}</div>
+		<div class="mb-3"><strong>Описание:</strong> {{ item['Описание'] }}</div>
+		<div class="mb-3"><strong>Местоположение:</strong> {{ item['Локация']|join(', ') }}</div>
+		<a href="/chat/{{ item.id }}" class="btn btn-primary">Начать чат</a>
+	</div>
+</div>
+{% endblock %}
