@@ -79,4 +79,3 @@ npm start
 - React Router
 - React Leaflet
 - Bootstrap
-- CORS
