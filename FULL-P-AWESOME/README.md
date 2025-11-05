@@ -25,6 +25,29 @@ python server.py
 ```
 Сервер запустится на http://127.0.0.1:5000
 
+Checkpoint
+
+Task Completed
+01:01 AM
+Готово! Теперь проект Campus Lost/Found MTUCI опубликован на GitHub в ветке main с правильными коммитами для лабораторных работ. Все файлы на месте.
+
+
+https://github.com/Mernomoff/Campus-Lost-Found-MTUCI-/tree/main 
+
+а почему я не могу открыть reat-app
+
+
+
+
+
+Checkpoint
+(Current)
+
+Task Completed
+01:02 AM
+Потому что react-app добавлена как git submodule (вложенный репозиторий). На GitHub она показывается как ссылка, но содержимое не отображается. Чтобы исправить:
+
+
 ### Frontend (React)
 ```bash
 cd react-app
