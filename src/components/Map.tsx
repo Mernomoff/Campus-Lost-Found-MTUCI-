@@ -3,7 +3,6 @@ import { MapContainer, TileLayer, Marker, Popup, Polygon } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
-// Fix for default markers in react-leaflet
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
@@ -17,14 +16,33 @@ interface Announcement {
   Категория: string;
   Описание: string;
   Локация: [number, number];
+  created_at: string;
+  user_id: number;
 }
 
-const announcements: Announcement[] = [
-  {'id': 1, 'type': 'Пропал', 'Категория': 'Электроника', 'Описание': 'Чёрный ноутбук', 'Локация': [55.7557, 37.71174]},
-  {'id': 2, 'type': 'Найден', 'Категория': 'Ключи', 'Описание': 'Серебряный брелок', 'Локация': [55.75566, 37.71494]},
-];
-
 function Map() {
+  const [announcements, setAnnouncements] = React.useState<Announcement[]>([]);
+  const [loading, setLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    const fetchAnnouncements = async () => {
+      try {
+        const response = await fetch('http://localhost:8002/api/announcements');
+        const data = await response.json();
+        setAnnouncements(data.announcements);
+      } catch (error) {
+        console.error('Error fetching announcements:', error);
+        setAnnouncements([
+          {'id': 1, 'type': 'Пропал', 'Категория': 'Электроника', 'Описание': 'Чёрный ноутбук', 'Локация': [55.7557, 37.71174], 'created_at': '2024-01-01T10:00:00Z', 'user_id': 1},
+          {'id': 2, 'type': 'Найден', 'Категория': 'Ключи', 'Описание': 'Серебряный брелок', 'Локация': [55.75566, 37.71494], 'created_at': '2024-01-02T11:00:00Z', 'user_id': 1},
+        ]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAnnouncements();
+  }, []);
   const campusPolygon: [number, number][] = [
     [55.75537, 37.71102],
     [55.75591, 37.71171],
