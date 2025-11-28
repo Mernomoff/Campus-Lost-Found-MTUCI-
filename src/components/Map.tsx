@@ -13,9 +13,9 @@ L.Icon.Default.mergeOptions({
 interface Announcement {
   id: number;
   type: string;
-  Категория: string;
-  Описание: string;
-  Локация: [number, number];
+  category: string;
+  description: string;
+  location: [number, number];
   created_at: string;
   user_id: number;
 }
@@ -29,12 +29,15 @@ function Map() {
       try {
         const response = await fetch('http://localhost:8002/api/announcements');
         const data = await response.json();
-        setAnnouncements(data.announcements);
+        if (!response.ok) {
+          throw new Error(data.detail || 'Request failed');
+        }
+        setAnnouncements(data.announcements || []);
       } catch (error) {
         console.error('Error fetching announcements:', error);
         setAnnouncements([
-          {'id': 1, 'type': 'Пропал', 'Категория': 'Электроника', 'Описание': 'Чёрный ноутбук', 'Локация': [55.7557, 37.71174], 'created_at': '2024-01-01T10:00:00Z', 'user_id': 1},
-          {'id': 2, 'type': 'Найден', 'Категория': 'Ключи', 'Описание': 'Серебряный брелок', 'Локация': [55.75566, 37.71494], 'created_at': '2024-01-02T11:00:00Z', 'user_id': 1},
+          {'id': 1, 'type': 'Пропал', 'category': 'Электроника', 'description': 'Чёрный ноутбук', 'location': [55.7557, 37.71174], 'created_at': '2024-01-01T10:00:00Z', 'user_id': 1},
+          {'id': 2, 'type': 'Найден', 'category': 'Ключи', 'description': 'Серебряный брелок', 'location': [55.75566, 37.71494], 'created_at': '2024-01-02T11:00:00Z', 'user_id': 1},
         ]);
       } finally {
         setLoading(false);
@@ -76,15 +79,22 @@ function Map() {
           >
             <Popup>Кампус МТУСИ</Popup>
           </Polygon>
-          {announcements.map(item => (
-            <Marker key={item.id} position={item.Локация}>
-              <Popup>
-                <div>
-                  <strong>{item.type}: {item.Описание}</strong>
-                </div>
-              </Popup>
-            </Marker>
-          ))}
+          {announcements?.map(item => {
+            const loc = item.location;
+            if (!loc || !Array.isArray(loc) || loc.length < 2) return null;
+            const lat = Number(loc[0]);
+            const lng = Number(loc[1]);
+            if (Number.isNaN(lat) || Number.isNaN(lng)) return null;
+            return (
+              <Marker key={item.id} position={[lat, lng]}>
+                <Popup>
+                  <div>
+                    <strong>{item.type}: {item.description}</strong>
+                  </div>
+                </Popup>
+              </Marker>
+            );
+          })}
         </MapContainer>
       </div>
     </div>

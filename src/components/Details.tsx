@@ -4,9 +4,11 @@ import { Link, useParams } from 'react-router-dom';
 interface Announcement {
   id: number;
   type: string;
-  Категория: string;
-  Описание: string;
-  Локация: [number, number];
+  category: string;
+  description: string;
+  location: [number, number];
+  image_path?: string;
+  processed_image_path?: string;
   created_at: string;
   user_id: number;
 }
@@ -64,15 +66,18 @@ function Details() {
     <div>
       <h1 style={{marginBottom: '30px'}}>Детали объявления</h1>
       <div className="card" style={{maxWidth: '500px', margin: '0 auto', boxShadow: '0 0 30px #2228', borderRadius: '20px'}}>
+        {announcement.processed_image_path && (
+          <img src={`http://localhost:8002/static/${announcement.processed_image_path}`} className="card-img-top" alt={announcement.category} style={{borderTopLeftRadius: '20px', borderTopRightRadius: '20px'}} />
+        )}
         <div className="card-body">
           <h4 className="card-title" style={{marginBottom: '20px'}}>
             <span className={`badge ${announcement.type === 'Пропал' ? 'bg-danger' : 'bg-success'}`}>
               {announcement.type.toUpperCase()}
             </span>
           </h4>
-          <div className="mb-3"><strong>Категория:</strong> {announcement.Категория}</div>
-          <div className="mb-3"><strong>Описание:</strong> {announcement.Описание}</div>
-          <div className="mb-3"><strong>Местоположение:</strong> {announcement.Локация.join(', ')}</div>
+          <div className="mb-3"><strong>Категория:</strong> {announcement.category || '—'}</div>
+          <div className="mb-3"><strong>Описание:</strong> {announcement.description || '—'}</div>
+          <div className="mb-3"><strong>Местоположение:</strong> {(announcement.location && Array.isArray(announcement.location) && announcement.location.length >= 2) ? announcement.location.join(', ') : '—'}</div>
           <div className="mb-3"><strong>Дата создания:</strong> {new Date(announcement.created_at).toLocaleDateString('ru-RU')}</div>
           <Link to={`/chat/${announcement.id}`} className="btn btn-primary">Начать чат</Link>
         </div>

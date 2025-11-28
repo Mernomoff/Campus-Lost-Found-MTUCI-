@@ -8,6 +8,7 @@ interface FormData {
   category: string;
   description: string;
   location: string;
+  image?: File | null;
 }
 
 function Post() {
@@ -36,16 +37,19 @@ function Post() {
         }
       }
 
-      const announcementData = {
-        type: formData.type,
-        category: formData.category,
-        description: formData.description,
-        location: locationArray
-      };
+      const formDataToSend = new FormData();
+      formDataToSend.append('type', formData.type);
+      formDataToSend.append('category', formData.category);
+      formDataToSend.append('description', formData.description);
+      formDataToSend.append('location', JSON.stringify(locationArray));
+      if (formData.image) {
+        formDataToSend.append('file', formData.image);
+      }
 
-      const response = await axios.post('http://localhost:8002/api/announcements', announcementData, {
+      const response = await axios.post('http://localhost:8002/api/announcements', formDataToSend, {
         headers: {
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data'
         }
       });
 
@@ -66,6 +70,14 @@ function Post() {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
+    });
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null;
+    setFormData({
+      ...formData,
+      image: file
     });
   };
 
@@ -113,6 +125,19 @@ function Post() {
             rows={3}
             required
           />
+        </div>
+
+        <div className="mb-4">
+          <label htmlFor="image" className="form-label" style={{fontWeight: '700'}}>Изображение</label>
+          <input
+            type="file"
+            name="image"
+            id="image"
+            onChange={handleFileChange}
+            className="form-control"
+            accept="image/*"
+          />
+          <small className="form-text text-muted">Лица на изображении будут автоматически размыты для защиты приватности.</small>
         </div>
 
         <div className="mb-4">
