@@ -160,6 +160,14 @@ const Post: React.FC = () => {
     );
   }
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null;
+    setFormData({
+      ...formData,
+      image: file
+    });
+  };
+
   return (
     <div className="container" style={{ maxWidth: '800px' }}>
       <div className="page-header">

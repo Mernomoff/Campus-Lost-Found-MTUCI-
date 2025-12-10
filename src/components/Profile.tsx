@@ -54,7 +54,7 @@ function Profile() {
     if (!window.confirm('Вы уверены, что хотите удалить это объявление?')) {
       return;
     }
-
+    
     try {
       await axios.delete(`http://127.0.0.1:8002/api/announcements/${id}`, {
         headers: {
@@ -167,7 +167,6 @@ function Profile() {
             </button>
           </div>
         </div>
-      </div>
 
       {/* Мои объявления */}
       <div className="card shadow-sm">
