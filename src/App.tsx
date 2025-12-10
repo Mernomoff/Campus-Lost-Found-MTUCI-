@@ -8,6 +8,7 @@ import Search from './components/Search';
 import Details from './components/Details';
 import Map from './components/Map';
 import Chat from './components/Chat';
+import ChatsList from './components/ChatsList';
 import Post from './components/Post';
 import Profile from './components/Profile';
 import Login from './components/Login';
@@ -18,66 +19,63 @@ function AppContent() {
 
   if (loading) {
     return (
-      <div className="d-flex justify-content-center align-items-center" style={{height: '100vh'}}>
-        <div className="spinner-border text-primary" role="status">
-          <span className="visually-hidden">Загрузка...</span>
-        </div>
+      <div className="loading-container">
+        <div className="spinner-border text-primary" />
       </div>
     );
   }
 
   return (
-    <div className="App">
-      <nav className="navbar navbar-expand-lg navbar-light bg-light">
-        <div className="container-fluid">
-          <Link className="navbar-brand" to="/" style={{color: '#fff'}}>Кампус: Потеряно/Найдено</Link>
-          <div className="navbar-nav">
-            <Link className="nav-link" to="/">Главная</Link>
-            <Link className="nav-link" to="/search">Поиск</Link>
-            <Link className="nav-link" to="/map">Карта</Link>
-
-            {isAuthenticated ? (
+    <Router>
+      <nav className="navbar navbar-expand-lg">
+        <div className="container">
+          <Link className="navbar-brand" to="/">
+            CAMPUS LOST/FOUND
+          </Link>
+          <div className="navbar-nav ms-auto d-flex flex-row gap-2">
+            <Link className="nav-link" to="/">🏠 Главная</Link>
+            <Link className="nav-link" to="/search">🔍 Поиск</Link>
+            <Link className="nav-link" to="/map">🗺️ Карта</Link>
+            {isAuthenticated && (
               <>
-                <Link className="nav-link" to="/post">Добавить</Link>
-                <Link className="nav-link" to="/profile">Профиль</Link>
-                <span className="nav-link">Привет, {user?.username}!</span>
-                <button className="btn btn-outline-danger btn-sm ms-2" onClick={logout}>
-                  Выйти
+                <Link className="nav-link" to="/chats">💬 Чаты</Link>
+                <Link className="nav-link" to="/post">➕ Добавить</Link>
+                <Link className="nav-link" to="/profile">👤 Профиль</Link>
+                <button onClick={logout} className="btn btn-sm btn-outline-primary">
+                  🚪 Выход
                 </button>
               </>
-            ) : (
+            )}
+            {!isAuthenticated && (
               <>
-                <Link className="nav-link" to="/login">Войти</Link>
-                <Link className="nav-link" to="/register">Регистрация</Link>
+                <Link className="nav-link" to="/login">🔑 Вход</Link>
+                <Link className="nav-link" to="/register">📝 Регистрация</Link>
               </>
             )}
           </div>
         </div>
       </nav>
 
-      <div className="container mt-4">
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/search" element={<Search />} />
-          <Route path="/details/:id" element={<Details />} />
-          <Route path="/map" element={<Map />} />
-          <Route path="/chat/:id" element={<Chat />} />
-          <Route path="/post" element={isAuthenticated ? <Post /> : <Login />} />
-          <Route path="/profile" element={isAuthenticated ? <Profile /> : <Login />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-        </Routes>
-      </div>
-    </div>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/search" element={<Search />} />
+        <Route path="/announcement/:id" element={<Details />} />
+        <Route path="/map" element={<Map />} />
+        <Route path="/chats" element={<ChatsList />} />
+        <Route path="/chat/:announcementId/:userId" element={<Chat />} />
+        <Route path="/post" element={<Post />} />
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+      </Routes>
+    </Router>
   );
 }
 
 function App() {
   return (
     <AuthProvider>
-      <Router>
-        <AppContent />
-      </Router>
+      <AppContent />
     </AuthProvider>
   );
 }

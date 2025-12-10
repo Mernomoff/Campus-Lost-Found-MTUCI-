@@ -5,17 +5,19 @@ import axios from 'axios';
 interface Announcement {
   id: number;
   type: string;
-  Категория: string;
-  Описание: string;
-  Локация: [number, number];
+  category: string;
+  description: string;
+  location: [number, number];
+  image_path?: string;
+  processed_image_path?: string;
   created_at: string;
   user_id: number;
 }
 
 function Search() {
-  const [query, setQuery] = React.useState<string>('');
-  const [category, setCategory] = React.useState<string>('');
-  const [type, setType] = React.useState<string>('');
+  const [query, setQuery] = React.useState('');
+  const [category, setCategory] = React.useState('');
+  const [type, setType] = React.useState('');
   const [results, setResults] = React.useState<Announcement[]>([]);
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState('');
@@ -23,16 +25,18 @@ function Search() {
   const performSearch = async () => {
     setLoading(true);
     setError('');
-
+    
     try {
       const params = new URLSearchParams();
       if (query) params.append('q', query);
       if (category) params.append('category', category);
       if (type) params.append('type', type);
-
-      const response = await axios.get(`http://localhost:8002/api/search?${params}`);
+      
+      const response = await axios.get(`http://127.0.0.1:8002/api/search?${params}`);
+      console.log('Search results:', response.data);
       setResults(response.data);
     } catch (err) {
+      console.error('Ошибка при поиске:', err);
       setError('Ошибка при поиске');
       setResults([]);
     } finally {
@@ -45,24 +49,25 @@ function Search() {
   }, [query, category, type]);
 
   return (
-    <div>
-      <h1>Поиск объявлений</h1>
+    <div className="container">
+      <div className="page-header">
+        <h1 className="page-title">Поиск объявлений</h1>
+      </div>
 
       <div className="card mb-4">
         <div className="card-body">
           <div className="row g-3">
-            <div className="col-md-4">
+            <div className="col-12 col-md-4">
               <input
                 type="text"
-                name="q"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 className="form-control"
                 placeholder="Поиск по описанию"
               />
             </div>
-
-            <div className="col-md-3">
+            
+            <div className="col-12 col-md-3">
               <select
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
@@ -76,8 +81,8 @@ function Search() {
                 <option value="Другое">Другое</option>
               </select>
             </div>
-
-            <div className="col-md-3">
+            
+            <div className="col-12 col-md-3">
               <select
                 value={type}
                 onChange={(e) => setType(e.target.value)}
@@ -88,14 +93,21 @@ function Search() {
                 <option value="Найден">Найдено</option>
               </select>
             </div>
-
-            <div className="col-md-2">
-              <button
-                onClick={performSearch}
+            
+            <div className="col-12 col-md-2">
+              <button 
+                onClick={performSearch} 
                 className="btn btn-primary w-100"
                 disabled={loading}
               >
-                {loading ? 'Поиск...' : 'Найти'}
+                {loading ? (
+                  <>
+                    <span className="spinner-border spinner-border-sm me-2" />
+                    Поиск...
+                  </>
+                ) : (
+                  'Найти'
+                )}
               </button>
             </div>
           </div>
@@ -103,43 +115,86 @@ function Search() {
       </div>
 
       {error && (
-        <div className="alert alert-danger" role="alert">
+        <div className="alert alert-danger">
           {error}
         </div>
       )}
 
-      <div className="row mt-3">
-        {results.length === 0 && !loading ? (
-          <div className="col-12">
-            <div className="alert alert-info text-center">
-              {query || category || type ? 'По вашему запросу ничего не найдено' : 'Введите критерии поиска'}
-            </div>
-          </div>
-        ) : (
-          results.map(item => (
-            <div key={item.id} className="col-md-4 mb-4">
-              <div className="card h-100">
-                <div className="card-body d-flex flex-column">
-                  <h5 className="card-title">
-                    <span className={`badge ${item.type === 'Пропал' ? 'bg-danger' : 'bg-success'}`}>
-                      {item.type.toUpperCase()}
-                    </span>
-                    <span className="ms-2">{item.Категория}</span>
-                  </h5>
-                  <p className="card-text flex-grow-1">{item.Описание}</p>
-                  <div className="mt-auto">
-                    <small className="text-muted">
-                      {new Date(item.created_at).toLocaleDateString('ru-RU')}
-                    </small>
-                    <br />
-                    <Link to={`/details/${item.id}`} className="btn btn-primary btn-sm mt-2">Посмотреть</Link>
+      {results.length === 0 && !loading ? (
+        <div className="empty-state">
+          <div className="empty-state-icon">🔍</div>
+          <p className="empty-state-title">
+            {query || category || type ? 'По вашему запросу ничего не найдено' : 'Введите критерии поиска'}
+          </p>
+        </div>
+      ) : (
+        <div className="row">
+          {results.map(item => {
+            // Получаем изображение
+            const imagePath = item.processed_image_path || item.image_path;
+            const imageUrl = imagePath ? `http://127.0.0.1:8002/static/${imagePath}` : null;
+
+            return (
+              <div key={item.id} className="col-12 col-md-6 mb-3">
+                <div className="card announcement-card">
+                  {/* Изображение */}
+                  {imageUrl ? (
+                    <img 
+                      src={imageUrl}
+                      alt={item.category}
+                      className="card-img-top"
+                      onError={(e) => {
+                        console.error('Image failed to load:', imageUrl);
+                        e.currentTarget.style.display = 'none';
+                      }}
+                    />
+                  ) : (
+                    <div 
+                      className="card-img-top"
+                      style={{ 
+                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '3rem'
+                      }}
+                    >
+                      📦
+                    </div>
+                  )}
+
+                  <div className="card-body">
+                    <div className="d-flex justify-content-between align-items-start mb-3">
+                      <span className={`badge ${item.type === 'Пропал' ? 'badge-lost' : 'badge-found'}`}>
+                        {item.type === 'Пропал' ? 'ПРОПАЛ' : 'НАЙДЕН'}
+                      </span>
+                      <span className="announcement-category">
+                        {item.category}
+                      </span>
+                    </div>
+                    
+                    <p className="announcement-description">
+                      {item.description}
+                    </p>
+                    
+                    <div className="d-flex justify-content-between align-items-center">
+                      <small className="announcement-date">
+                        📅 {new Date(item.created_at).toLocaleDateString('ru-RU')}
+                      </small>
+                      <Link 
+                        to={`/announcement/${item.id}`}
+                        className="btn btn-outline-primary btn-sm"
+                      >
+                        Посмотреть
+                      </Link>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          ))
-        )}
-      </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

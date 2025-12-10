@@ -6,9 +6,11 @@ import { useAuth } from '../contexts/AuthContext';
 interface Announcement {
   id: number;
   type: string;
-  Категория: string;
-  Описание: string;
-  Локация: [number, number];
+  category: string;
+  description: string;
+  location: [number, number];
+  image_path?: string;
+  processed_image_path?: string;
   created_at: string;
   user_id: number;
 }
@@ -25,14 +27,12 @@ function Home() {
 
   const fetchAnnouncements = async () => {
     try {
-      const response = await axios.get('http://localhost:8002/api/announcements');
+      const response = await axios.get('http://127.0.0.1:8002/api/announcements');
+      console.log('Announcements data:', response.data.announcements);
       setAnnouncements(response.data.announcements);
     } catch (err) {
+      console.error('Error loading announcements:', err);
       setError('Ошибка при загрузке объявлений');
-      setAnnouncements([
-        {'id': 1, 'type': 'Пропал', 'Категория': 'Электроника', 'Описание': 'Чёрный ноутбук', 'Локация': [55.7557, 37.71174], 'created_at': '2024-01-01T10:00:00Z', 'user_id': 1},
-        {'id': 2, 'type': 'Найден', 'Категория': 'Ключи', 'Описание': 'Серебряный брелок', 'Локация': [55.75566, 37.71494], 'created_at': '2024-01-02T11:00:00Z', 'user_id': 1},
-      ]);
     } finally {
       setLoading(false);
     }
@@ -40,7 +40,7 @@ function Home() {
 
   if (loading) {
     return (
-      <div className="d-flex justify-content-center align-items-center" style={{height: '400px'}}>
+      <div className="loading-container">
         <div className="spinner-border text-primary" role="status">
           <span className="visually-hidden">Загрузка...</span>
         </div>
@@ -49,57 +49,121 @@ function Home() {
   }
 
   return (
-    <div>
-      <div className="home-bg-3d">
-        <img src="/3d-campus.png" alt="3D Campus" />
+    <div className="container">
+      <div className="page-header">
+        <h1 className="page-title">Последние объявления</h1>
+        <p className="page-subtitle">Найдено: {announcements.length}</p>
       </div>
-      <h1 id="ann-title" className="text-center">Последние объявления</h1>
 
       {error && (
-        <div className="alert alert-warning text-center" role="alert">
+        <div className="alert alert-danger">
           {error}
         </div>
       )}
 
       {!isAuthenticated && (
-        <div className="alert alert-info text-center" role="alert">
-          <strong>Войдите в систему</strong>, чтобы добавлять объявления и общаться с пользователями.
-          <br />
-          <Link to="/login" className="btn btn-primary mt-2">Войти</Link>
-          <Link to="/register" className="btn btn-outline-primary mt-2 ms-2">Зарегистрироваться</Link>
+        <div className="alert alert-info mb-4">
+          Войдите в систему, чтобы добавлять объявления и общаться с пользователями.
+          <div className="mt-3 d-flex gap-2">
+            <Link to="/login" className="btn btn-primary btn-sm">
+              Войти
+            </Link>
+            <Link to="/register" className="btn btn-outline-primary btn-sm">
+              Зарегистрироваться
+            </Link>
+          </div>
         </div>
       )}
 
       {isAuthenticated && (
-        <div className="alert alert-success text-center" role="alert">
-          <strong>Добро пожаловать!</strong> Вы можете <Link to="/post" className="alert-link">добавить объявление</Link> или <Link to="/profile" className="alert-link">посмотреть свой профиль</Link>.
+        <div className="alert alert-success mb-4">
+          Добро пожаловать! Вы можете добавить объявление или посмотреть свой профиль.
         </div>
       )}
 
       <div className="row">
-        {announcements.map(item => (
-          <div key={item.id} className="col-md-4 mb-4">
-            <div className="card h-100">
-              <div className="card-body d-flex flex-column">
-                <h5 className="card-title">
-                  <span className={`badge ${item.type === 'Пропал' ? 'bg-danger' : 'bg-success'}`}>
-                    {item.type.toUpperCase()}
-                  </span>
-                  <span className="ms-2">{item.Категория}</span>
-                </h5>
-                <p className="card-text flex-grow-1">{item.Описание}</p>
-                <div className="mt-auto">
-                  <small className="text-muted">
-                    {new Date(item.created_at).toLocaleDateString('ru-RU')}
-                  </small>
-                  <br />
-                  <Link to={`/details/${item.id}`} className="btn btn-primary btn-sm mt-2">Подробнее</Link>
+        {announcements.map(item => {
+          // Получаем изображение
+          const imagePath = item.processed_image_path || item.image_path;
+          const imageUrl = imagePath ? `http://127.0.0.1:8002/static/${imagePath}` : null;
+
+          return (
+            <div key={item.id} className="col-12 col-md-6 mb-4">
+              <div className="card announcement-card">
+                {/* Изображение */}
+                {imageUrl ? (
+                  <img 
+                    src={imageUrl}
+                    alt={item.category}
+                    className="card-img-top"
+                    style={{ height: '200px', objectFit: 'cover' }}
+                    onError={(e) => {
+                      console.error('Image failed to load:', imageUrl);
+                      e.currentTarget.style.display = 'none';
+                    }}
+                  />
+                ) : (
+                  <div 
+                    className="card-img-top"
+                    style={{ 
+                      height: '200px',
+                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '3rem'
+                    }}
+                  >
+                    📦
+                  </div>
+                )}
+
+                <div className="card-body">
+                  {/* Badge */}
+                  <div className="d-flex justify-content-between align-items-start mb-3">
+                    <span className={`badge ${item.type === 'Пропал' ? 'badge-lost' : 'badge-found'}`}>
+                      {item.type.toUpperCase()}
+                    </span>
+                    <span className="announcement-category">
+                      {item.category}
+                    </span>
+                  </div>
+
+                  {/* Описание */}
+                  <p className="announcement-description">
+                    {item.description}
+                  </p>
+
+                  {/* Дата и кнопка */}
+                  <div className="d-flex justify-content-between align-items-center">
+                    <small className="announcement-date">
+                      📅 {new Date(item.created_at).toLocaleDateString('ru-RU')}
+                    </small>
+                    <Link 
+                      to={`/announcement/${item.id}`}
+                      className="btn btn-outline-primary btn-sm"
+                    >
+                      Подробнее →
+                    </Link>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
+
+      {announcements.length === 0 && !loading && (
+        <div className="empty-state">
+          <div className="empty-state-icon">📭</div>
+          <p className="empty-state-title">Объявлений не найдено. Будьте первым!</p>
+          {isAuthenticated && (
+            <Link to="/post" className="btn btn-primary mt-3">
+              ➕ Добавить объявление
+            </Link>
+          )}
+        </div>
+      )}
     </div>
   );
 }
